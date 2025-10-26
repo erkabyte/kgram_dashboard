@@ -15,12 +15,12 @@ class EntertainmentRequest extends FormRequest
             'plan_id' => 'required_if:movie_access,paid',
             'language'=> ['required'],
             'genres'=> ['required'],
-            'content_rating'=>'required|string',
-            'actors'=> ['required'],
-            'directors'=> ['required'],
-            'IMDb_rating' => 'required|numeric|min:1|max:10',
-            'duration'=> ['required'],
-            'release_date' => ['required'],
+            // 'content_rating'=>'required|string',
+            // 'actors'=> ['required'],
+            // 'directors'=> ['required'],
+            // 'IMDb_rating' => 'required|numeric|min:1|max:10',
+            // 'duration'=> ['required'],
+            // 'release_date' => ['required'],
             'description' => ['required', 'string'],
 
         ];

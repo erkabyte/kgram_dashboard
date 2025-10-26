@@ -302,7 +302,7 @@
                         @enderror
                         <div class="invalid-feedback" id="name-error">Genres field is required</div>
                     </div>
-                    <div class="col-md-6 col-lg-4">
+                    <!-- <div class="col-md-6 col-lg-4">
                         {{ html()->label(__('movie.lbl_countries'), 'countries')->class('form-label') }}
                         {{ html()->select('countries[]', $countries->pluck('name', 'id')->prepend(__('placeholder.lbl_select_country'), ''), old('countries', $data['countries'] ?? []))
                             ->class('form-control select2')
@@ -312,7 +312,7 @@
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                         <div class="invalid-feedback" id="countries-error">Countries field is required</div>
-                    </div>
+                    </div> 
 
                     <div class="col-md-6 col-lg-4">
                         {{ html()->label(__('movie.lbl_imdb_rating') . ' <span class="text-danger">*</span>', 'IMDb_rating')->class('form-label') }}
@@ -335,7 +335,7 @@
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                         <div class="invalid-feedback" id="name-error">Content Rating field is required</div>
-                    </div>
+                    </div>-->
                     <div class="col-md-6 col-lg-4">
                         {{ html()->label(__('movie.lbl_duration') . ' <span class="text-danger">*</span>', 'duration')->class('form-label') }}
                         {{ html()->time('duration')->attribute('value',  $data->duration)->placeholder(__('movie.lbl_duration'))->class('form-control min-datetimepicker-time')->attribute('required','required')->id('duration') }}
@@ -344,7 +344,7 @@
                         @enderror
                         <div class="invalid-feedback" id="duration-error">Duration field is required</div>
                     </div>
-                    <div class="col-md-6 col-lg-4">
+                    <!-- <div class="col-md-6 col-lg-4">
                         {{ html()->label(__('movie.lbl_release_date').'<span class="text-danger">*</span>' , 'release_date')->class('form-label') }}
                         {{ html()->date('release_date')->attribute('value', $data->release_date)->placeholder(__('movie.lbl_release_date'))->class('form-control datetimepicker')->attribute('required','required')->id('release_date') }}
                         @error('release_date')
@@ -364,7 +364,7 @@
                         @error('is_restricted')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
-                    </div>
+                    </div> -->
                     <div class="col-md-6 col-lg-4">
                         {{ html()->label(__('movie.lbl_download_status'), 'download_status')->class('form-label') }}
                         <div class="d-flex justify-content-between align-items-center form-control">
@@ -382,32 +382,6 @@
             </div>
         </div>
 
-        <div class="d-flex align-items-center justify-content-between mt-5 pt-4 mb-3">
-            <h5>{{ __('movie.lbl_actor_director') }}</h5>
-        </div>
-        <div class="card">
-            <div class="card-body">
-                <div class="row gy-3">
-                    <div class="col-md-6">
-                        {{ html()->label(__('movie.lbl_actors') . '<span class="text-danger">*</span>', 'actors')->class('form-label') }}
-                        {{ html()->select('actors[]', $actors->pluck('name', 'id'), $data->actors )->class('form-control select2')->id('actors')->multiple()->attribute('required','required') }}
-                        @error('actors')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                         <div class="invalid-feedback" id="name-error">Actors field is required</div>
-                    </div>
-
-                    <div class="col-md-6">
-                        {{ html()->label(__('movie.lbl_directors') . '<span class="text-danger">*</span>', 'directors')->class('form-label') }}
-                        {{ html()->select('directors[]', $directors->pluck('name', 'id'), $data->directors )->class('form-control select2')->id('directors')->multiple()->attribute('required','required') }}
-                        @error('directors')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                         <div class="invalid-feedback" id="name-error">Directors field is required</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <div class="d-flex align-items-center justify-content-between mt-5 pt-4 mb-3">
             <h5>{{ __('movie.lbl_video_info') }}</h5>
@@ -480,6 +454,34 @@
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                         <div class="invalid-feedback" id="file-error">Video File field is required</div>
+                        
+                        <div class="mb-3 d-none" id="video_dropbox_uploader_section">
+                            @include('components.dropbox-uploader')
+                            <input type="hidden" name="video_url_input" id="dropbox_video_url_input">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Dropbox Status Fields -->
+                <div class="row gy-3 mt-3" id="dropbox_status_section" style="display: none;">
+                    <div class="col-md-6">
+                        {{ html()->label('Dropbox Video Status', 'dropbox_video_status')->class('form-label') }}
+                        {{ html()->select(
+                                'dropbox_video_status',
+                                $dropboxStatusOptions,
+                                old('dropbox_video_status', $data->dropbox_video_status ?? 'queued'),
+                            )->class('form-control select2')->id('dropbox_video_status')
+                        }}
+                        @error('dropbox_video_status')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="col-md-6">
+                        {{ html()->label('Dropbox URL', 'dropbox_url')->class('form-label') }}
+                        {{ html()->text('dropbox_url')->attribute('value', old('dropbox_url', $data->dropbox_url))->placeholder('Dropbox video URL')->class('form-control')->id('dropbox_url') }}
+                        @error('dropbox_url')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
                     </div>
                 </div>
             </div>
@@ -766,6 +768,16 @@ tinymce.init({
                     if (trailervideo) {
                         trailervideo.value = '';
                     }
+                    
+                } else if (selectedValue === 'Dropbox') {
+                    URLInput.classList.remove('d-none');
+                    FileInput.classList.add('d-none');
+                    URLInputField.setAttribute('required', 'required');
+                    trailerfile.removeAttribute('required');
+                    if (trailervideourl) {
+                        trailervideourl.value = trailervideourl.value;
+                    }
+
                 } else {
                     FileInput.classList.add('d-none');
                     URLInput.classList.add('d-none');
@@ -894,6 +906,8 @@ document.addEventListener('DOMContentLoaded', function() {
  function handleVideoUrlTypeChange(selectedtypeValue) {
      var VideoFileInput = document.getElementById('video_file_input_section');
      var VideoURLInput = document.getElementById('video_url_input_section');
+     var VideoDropboxInput = document.getElementById('video_dropbox_uploader_section');
+     var dropboxStatusSection = document.getElementById('dropbox_status_section');
      var vfi = document.querySelector('input[name="image_input4"]');
      var vui = document.getElementById('video_url_input');
      var videofile = document.querySelector('input[name="video_file_input"]');
@@ -932,9 +946,22 @@ document.addEventListener('DOMContentLoaded', function() {
             videofile.value = '';
         }
         validateVideoUrlInput();
-     } else {
+     } else if (selectedtypeValue === 'Dropbox') {
+        VideoURLInput.classList.remove('d-none');
+        VideoDropboxInput.classList.remove('d-none');
+        dropboxStatusSection.style.display = 'block';
+        videourl.setAttribute('required', 'required');
+        if (videourl) {
+            videourl.value = videourl.value;
+        }
+        videofile.removeAttribute('required');
+        fileError.style.display = 'block';
+     }
+     else {
          VideoFileInput.classList.add('d-none');
          VideoURLInput.classList.add('d-none');
+         VideoDropboxInput.classList.add('d-none');
+         dropboxStatusSection.style.display = 'none';
 
      }
  }
@@ -1047,10 +1074,28 @@ $('#GenrateDescription').on('click', function(e) {
            }
         }
     });
+    });
  });
-});
 
+    // Dropbox Status Management Functions
+    function updateDropboxStatus(status, dropboxUrl = null) {
+        $('#dropbox_video_status').val(status);
+        if (dropboxUrl) {
+            $('#dropbox_url').val(dropboxUrl);
+        }
+    }
 
+    // Initialize status on page load
+    var initialStatus = $('#dropbox_video_status').val();
+    if (initialStatus && $('#video_upload_type').val() === 'Dropbox') {
+        $('#dropbox_status_section').show();
+    }
+
+    // Handle dropbox status change
+    $('#dropbox_video_status').change(function() {
+        var status = $(this).val();
+        // You can add additional logic here if needed
+    });
 
     </script>
 

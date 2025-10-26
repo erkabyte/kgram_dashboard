@@ -75,8 +75,8 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
-
+    // 'timezone' => 'UTC+8',
+    'timezone' => 'Asia/Ulaanbaatar',
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

@@ -22,13 +22,16 @@
         </div>
     </div>
 
+<!-- submit-button form-submit
+
+-->
 @endif
 
     {{ html()->form('POST' ,route('backend.entertainments.store'))
     ->attribute('enctype', 'multipart/form-data')
-    ->attribute('data-toggle', 'validator')
     ->attribute('id', 'form-submit')
     ->class('requires-validation')
+    ->attribute('data-toggle', 'validator') 
     ->attribute('novalidate', 'novalidate')
     ->open()
 }}
@@ -159,19 +162,78 @@
                                 <div class="invalid-feedback" id="trailer-file-error">Video File field is required</div>
 
                             </div>
+                            <div class="mb-3 d-none" id="trailer_file_input_section">
+                            {{ html()->label(__('movie.lbl_trailer_video') . '<span class="text-danger">*</span>', 'trailer_video')->class('form-label') }}
+
+                            <div class="input-group btn-video-link-upload mb-3">
+                                {{ html()->button(__('placeholder.lbl_select_file').'<i class="ph ph-upload"></i>')->class('input-group-text form-control')->type('button')->attribute('data-bs-toggle', 'modal')->attribute('data-bs-target', '#exampleModal')->attribute('data-image-container', 'selectedImageContainertailerurl')->attribute('data-hidden-input', 'file_url_trailer') }}
+
+                                {{ html()->text('trailer_video')->class('form-control')->placeholder(__('placeholder.lbl_movie_name'))->attribute('aria-label', 'Trailer Image')->attribute('data-bs-toggle', 'modal')->attribute('data-bs-target', '#exampleModal')->attribute('data-image-container', 'selectedImageContainertailerurl')->attribute('data-hidden-input', 'file_url_trailer')}}
+                            </div>
+
+                            <div class="mt-3" id="selectedImageContainertailerurl">
+                                @if (old('trailer_video'))
+                                    <img src="{{ old('trailer_video') }}"
+                                        class="img-fluid mb-2" style="max-width: 100px; max-height: 100px;">
+                                @endif
+                            </div>
+
+                            {{ html()->hidden('trailer_video')->id('file_url_video')->value(old('trailer_video'))->attribute('data-validation', 'iq_video_quality')  }}
+
+                            @error('trailer_video')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                            <div class="invalid-feedback" id="trailer-file-error">Video File field is required</div>
+                            </div>
+                            
+                            <div class="mb-3 d-none" id="video_dropbox_trailer_uploader_section">
+                                @include('components.dropbox-trailer-uploader')
+                                <input type="hidden" name="trailer_url_input" id="dropbox_trailer_url_input">
+                            </div>
+
+                            <div class="row gy-3 mt-3" id="dropbox_trailer_status_section" style="display: none;">
+                                <div class="col-md-6">
+                                    {{ html()->label('Dropbox Video Status', 'dropbox_trailer_video_status')->class('form-label') }}
+                                    {{ html()->select(
+                                            'dropbox_trailer_video_status',
+                                            [
+                                                'queued' => 'Queued',
+                                                'uploading' => 'Uploading', 
+                                                'processing' => 'Processing',
+                                                'completed' => 'Completed',
+                                                'failed' => 'Failed'
+                                            ],
+                                            old('dropbox_trailer_video_status', 'queued'),
+                                        )->class('form-control select2')->id('dropbox_trailer_video_status')
+                                    }}
+                                    @error('dropbox_trailer_video_status')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                <div class="col-md-12">
+                                    {{ html()->label('Dropbox URL', 'dropbox_trailer_url')->class('form-label') }}
+                                    {{ html()->text('dropbox_trailer_url')->attribute('value', old('dropbox_trailer_url'))->placeholder('Dropbox video URL')->class('form-control')->id('dropbox_trailer_url') }}
+                                    @error('dropbox_trailer_url')
+                                        <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                                </div>
+                            <!-- </div> -->
                         </div>
                     <!-- </div> -->
-                    <div class="col-lg-12">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            {{ html()->label(__('movie.lbl_description'). ' <span class="text-danger">*</span>', 'description')->class('form-label mb-0') }}
-                            <span class="text-primary cursor-pointer"  id="GenrateDescription" ><i class="ph ph-info" data-bs-toggle="tooltip" title="{{ __('messages.chatgpt_info') }}"></i> {{ __('messages.lbl_chatgpt') }}</span>
+                     <!-- description -->
+                        <div class="col-lg-12">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                {{ html()->label(__('movie.lbl_description'). ' <span class="text-danger">*</span>', 'description')->class('form-label mb-0') }}
+                                <span class="text-primary cursor-pointer"  id="GenrateDescription" ><i class="ph ph-info" data-bs-toggle="tooltip" title="{{ __('messages.chatgpt_info') }}"></i> {{ __('messages.lbl_chatgpt') }}</span>
+                            </div>
+                            {{ html()->textarea('description', old('description'))->class('form-control')->id('description')->placeholder(__('placeholder.lbl_movie_description'))->attribute('required', 'required')->rows(5) }}
+                            @error('description')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                            <div class="invalid-feedback" id="desc-error">Description field is required</div>
                         </div>
-                        {{ html()->textarea('description', old('description'))->class('form-control')->id('description')->placeholder(__('placeholder.lbl_movie_description'))->attribute('required', 'required')->rows(5) }}
-                        @error('description')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                        <div class="invalid-feedback" id="desc-error">Description field is required</div>
-                    </div>
+                        <!-- Movie access paid/free-->
                     <div class="col-md-6 col-lg-4">
                         {{ html()->label(__('movie.lbl_movie_access'), 'movie_access')->class('form-label') }}
                         <div class="d-flex align-items-center gap-3">
@@ -228,6 +290,7 @@
         <div class="card">
             <div class="card-body">
                 <div class="row gy-3">
+
                     <div class="col-md-6 col-lg-4">
                         {{ html()->label(__('movie.lbl_movie_language') . '<span class="text-danger">*</span>', 'language')->class('form-label') }}
                         {{ html()->select('language', $movie_language->pluck('name', 'value')->prepend(__('placeholder.lbl_select_language'), ''), old('language'))->class('form-control select2')->id('language')->attribute('required', 'required') }}
@@ -236,31 +299,51 @@
                         @enderror
                         <div class="invalid-feedback" id="name-error">Language field is required</div>
                     </div>
+                                
                     <div class="col-md-6 col-lg-4">
-    {{ html()->label(__('movie.lbl_genres') . '<span class="text-danger">*</span>', 'genres')->class('form-label') }}
-    {{ html()->select('genres[]', $genres->pluck('name', 'id'), old('genres'))
-        ->class('form-control select2')
-        ->id('genres')
-        ->multiple()
-        ->attribute('required', 'required') }}
-    @error('genres')
-        <span class="text-danger">{{ $message }}</span>
-    @enderror
-    <div class="invalid-feedback" id="name-error">Genres field is required</div>
+                        {{ html()->label(__('movie.lbl_genres') . '<span class="text-danger">*</span>', 'genres')->class('form-label') }}
+                        {{ html()->select('genres[]', $genres->pluck('name', 'id'), old('genres'))
+                            ->class('form-control select2')
+                            ->id('genres')
+                            ->multiple()
+                            ->attribute('required', 'required') }}
+                        @error('genres')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                        <div class="invalid-feedback" id="name-error">Genres field is required</div>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        {{ html()->label(__('movie.lbl_duration') . ' <span class="text-danger">*</span>', 'duration')->class('form-label') }}
+                        {{ html()->time('duration')->attribute('value', old('duration'))->placeholder(__('movie.lbl_duration'))->class('form-control  min-datetimepicker-time')->attribute('required', 'required')->id('duration') }}
+                        @error('duration')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                        <div class="invalid-feedback" id="duration-error">Duration field is required</div>
+                    </div>
 
-</div>
+                </div>
+            <!-- 
+                <div class="row gy-3">
+                    <div class="col-md-6 col-lg-4">
+                        {{ html()->label(__('movie.lbl_movie_language') . '<span class="text-danger">*</span>', 'language')->class('form-label') }}
+                        {{ html()->select('language', $movie_language->pluck('name', 'value')->prepend(__('placeholder.lbl_select_language'), ''), old('language'))->class('form-control select2')->id('language')->attribute('required', 'required') }}
+                        @error('language')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                        <div class="invalid-feedback" id="name-error">Language field is required</div>
+                    </div>
 
-<div class="col-md-6 col-lg-4">
-    {{ html()->label(__('movie.lbl_countries'), 'countries')->class('form-label') }}
-    {{ html()->select('countries[]', $countries->pluck('name', 'id'), old('countries'))
-        ->class('form-control select2')
-        ->id('countries')
-        ->multiple()}}
-    @error('countries')
-        <span class="text-danger">{{ $message }}</span>
-    @enderror
-    <div class="invalid-feedback" id="country-error">Country field is required</div>
-</div>
+                    <div class="col-md-6 col-lg-4">
+                        {{ html()->label(__('movie.lbl_countries'), 'countries')->class('form-label') }}
+                        {{ html()->select('countries[]', $countries->pluck('name', 'id'), old('countries'))
+                            ->class('form-control select2')
+                            ->id('countries')
+                            ->multiple()}}
+                        @error('countries')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                        <div class="invalid-feedback" id="country-error">Country field is required</div>
+                    </div>
 
 
                     <div class="col-md-6 col-lg-4">
@@ -287,14 +370,6 @@
                         <div class="invalid-feedback" id="name-error">Content Rating field is required</div>
                     </div>
                     <div class="col-md-6 col-lg-4">
-                        {{ html()->label(__('movie.lbl_duration') . ' <span class="text-danger">*</span>', 'duration')->class('form-label') }}
-                        {{ html()->time('duration')->attribute('value', old('duration'))->placeholder(__('movie.lbl_duration'))->class('form-control  min-datetimepicker-time')->attribute('required', 'required')->id('duration') }}
-                        @error('duration')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                        <div class="invalid-feedback" id="duration-error">Duration field is required</div>
-                    </div>
-                    <div class="col-md-6 col-lg-4">
                        {{ html()->label(__('movie.lbl_release_date').'<span class="text-danger">*</span>', 'release_date')->class('form-label') }}
                        {{ html()->text('release_date')->attribute('value', old('release_date'))->placeholder(__('movie.lbl_release_date'))->class('form-control datetimepicker')->attribute('required', 'required')->id('release_date') }}
                        @error('release_date')
@@ -302,7 +377,7 @@
                        @enderror
                        <div class="invalid-feedback" id="release_date-error">Release Date field is required</div>
                    </div>
-                    <div class="col-md-6 col-lg-4">
+                    <!-- <div class="col-md-6 col-lg-4">
                         {{ html()->label(__('movie.lbl_age_restricted'), 'is_restricted')->class('form-label') }}
                         <div class="d-flex justify-content-between align-items-center form-control">
                             {{ html()->label(__('movie.lbl_child_content'), 'is_restricted')->class('form-label mb-0 text-body') }}
@@ -314,8 +389,8 @@
                         @error('is_restricted')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
-                    </div>
-                        <div class="col-md-6 col-lg-4">
+                    </div> -->
+                        <!-- <div class="col-md-6 col-lg-4">
                             {{ html()->label(__('movie.lbl_download_status'), 'download_status')->class('form-label') }}
                             <div class="d-flex justify-content-between align-items-center form-control">
                                 {{ html()->label(__('messages.on'), 'download_status')->class('form-label mb-0 text-body') }}
@@ -327,13 +402,13 @@
                             @error('download_status')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
-                        </div>
-
+                        </div> 
+-->
                 </div>
             </div>
-        </div>
+        </div> 
 
-
+<!-- 
         <div class="d-flex align-items-center justify-content-between mt-5 pt-4 mb-3">
             <h6>{{__('movie.lbl_actor_director')}}</h6>
         </div>
@@ -359,13 +434,116 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <div class="d-flex align-items-center justify-content-between mt-5 pt-4 mb-3">
             <h5>{{ __('movie.lbl_video_info') }}</h5>
         </div>
 
+        <!-- added for dropbox -->
         <div class="card">
+            <div class="card-body">
+                <div class="row gy-3">
+                    <div class="col-md-6">
+                        {{ html()->label(__('movie.lbl_video_upload_type'). '<span class="text-danger">*</span>', 'video_upload_type')->class('form-label') }}
+                        {{ html()->select(
+                                'video_upload_type',
+                                $upload_url_type->pluck('name', 'value')->prepend(__('placeholder.lbl_select_video_type'), ''),
+                                old('video_upload_type', ''),
+                            )->class('form-control select2')->id('video_upload_type')
+                            ->required()
+                        }}
+                        @error('video_upload_type')
+                            <span class="text-danger">{{ $message }}</span>
+                        @enderror
+                        <div class="invalid-feedback" id="name-error">Video Type field is required</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3 d-none" id="video_url_input_section">
+                            {{ html()->label(__('movie.video_url_input') . '<span class="text-danger">*</span>', 'video_url_input')->class('form-control-label') }}
+                            {{ html()->text('video_url_input')->attribute('value', old('video_url_input'))->placeholder(__('placeholder.video_url_input'))->class('form-control')->id('video_url_input') }}
+                            @error('video_url_input')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                            <div class="invalid-feedback" id="url-error">Video URL field is required</div>
+                            <div class="invalid-feedback" id="url-pattern-error" style="display:none;">
+                            Please enter a valid URL starting with http:// or https://.
+                        </div>
+                        </div>
+
+                        <div class="mb-3 d-none" id="video_file_input_section">
+                            {{ html()->label(__('movie.video_file_input') . '<span class="text-danger">*</span>', 'video_file')->class('form-label') }}
+
+                            <div class="input-group btn-video-link-upload mb-3">
+                                {{ html()->button(__('placeholder.lbl_select_file').'<i class="ph ph-upload"></i>')->class('input-group-text form-control')->type('button')->attribute('data-bs-toggle', 'modal')->attribute('data-bs-target', '#exampleModal')->attribute('data-image-container', 'selectedImageContainerVideourl')->attribute('data-hidden-input', 'file_url_video') }}
+
+                                {{ html()->text('video_file_input')->class('form-control')->placeholder('Select Image')->attribute('aria-label', 'Video Image')->attribute('data-bs-toggle', 'modal')->attribute('data-bs-target', '#exampleModal')->attribute('data-image-container', 'selectedImageContainerVideourl')->attribute('data-hidden-input', 'file_url_video')}}
+                            </div>
+
+                            <div class="mt-3" id="selectedImageContainerVideourl">
+                                @if (old('video_file_input'))
+                                    <img src="{{ old('video_file_input') }}"
+                                        class="img-fluid mb-2" style="max-width: 100px; max-height: 100px;">
+                                @endif
+                            </div>
+
+                            {{ html()->hidden('video_file_input')->id('file_url_video')->value(old('video_file_input'))->attribute('data-validation', 'iq_video_quality')  }}
+
+                            @error('video_file_input')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                            <div class="invalid-feedback" id="file-error">Video File field is required</div>
+                        </div>
+                        <div class="mb-3 d-none" id="video_dropbox_uploader_section">
+                            @include('components.dropbox-uploader')
+                            <input type="hidden" name="dropbox_video_url_input" id="dropbox_video_url_input">
+                            <div class="mt-2">
+                                <span class="badge bg-secondary" id="dropbox-upload-status-badge" style="display:none;">
+                                    <span class="status-text">queued</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        
+                        <!-- Dropbox Status Fields -->
+                        <div class="row gy-3 mt-3" id="dropbox_status_section" style="display: none;">
+                            <div class="col-md-6">
+                                {{ html()->label('Dropbox Video Status', 'dropbox_video_status')->class('form-label') }}
+                                {{ html()->select(
+                                        'dropbox_video_status',
+                                        [
+                                            'queued' => 'Queued',
+                                            'uploading' => 'Uploading', 
+                                            'processing' => 'Processing',
+                                            'completed' => 'Completed',
+                                            'failed' => 'Failed'
+                                        ],
+                                        old('dropbox_video_status', 'queued'),
+                                    )->class('form-control select2')->id('dropbox_video_status')
+                                }}
+                                @error('dropbox_video_status')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            <div class="col-md-12">
+                                {{ html()->label('Dropbox URL', 'dropbox_url')->class('form-label') }}
+                                {{ html()->text('dropbox_url')->attribute('value', old('dropbox_url'))->placeholder('Dropbox video URL')->class('form-control')->id('dropbox_url') }}
+                                @error('dropbox_url')
+                                    <span class="text-danger">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+
+                    <!-- </div> -->
+                <!-- </div> -->
+                
+                </div>
+            </div>
+        </div> 
+                            </div>
+        <!-- added for dropbox -->
+
+        <!-- <div class="card">
             <div class="card-body">
                 <div class="row gy-3">
                     <div class="col-md-6">
@@ -421,7 +599,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <div class="d-flex align-items-center justify-content-between mt-5 pt-4 mb-3">
             <h6>{{ __('movie.lbl_quality_info') }}</h6>
@@ -513,23 +691,23 @@ $(document).ready(function() {
         allowClear: true  // Allows clearing the selection
     });
 
-    $('#countries').select2({
-        width: '100%',
-        placeholder: "{{ __('movie.lbl_countries') }}",
-        allowClear: true  // Allows clearing the selection
-    });
+    // $('#countries').select2({
+    //     width: '100%',
+    //     placeholder: "{{ __('movie.lbl_countries') }}",
+    //     allowClear: true  // Allows clearing the selection
+    // });
 
-    $('#actors').select2({
-        width: '100%',
-        placeholder: "{{ __('movie.lbl_actors') }}",  // Set the placeholder text here
-        allowClear: true  // Allows clearing the selection
-    });
+    // $('#actors').select2({
+    //     width: '100%',
+    //     placeholder: "{{ __('movie.lbl_actors') }}",  // Set the placeholder text here
+    //     allowClear: true  // Allows clearing the selection
+    // });
 
-    $('#directors').select2({
-        width: '100%',
-        placeholder: "{{ __('movie.lbl_directors') }}",  // Set the placeholder text here
-        allowClear: true  // Allows clearing the selection
-    });
+    // $('#directors').select2({
+    //     width: '100%',
+    //     placeholder: "{{ __('movie.lbl_directors') }}",  // Set the placeholder text here
+    //     allowClear: true  // Allows clearing the selection
+    // });
 });
 
 
@@ -580,12 +758,21 @@ document.addEventListener('DOMContentLoaded', function () {
             document.addEventListener('DOMContentLoaded', function() {
 
                 function handleTrailerUrlTypeChange(selectedValue) {
-                    var FileInput = document.getElementById('url_file_input');
-                    var URLInput = document.getElementById('url_input');
+                    var FileInput = document.getElementById('url_file_input');//file_url_trailer
+                    // var trailerURLInput = document.getElementById('trailer_url');
+                    var FileNoNeed = document.getElementById('file_url_trailer');
+                    var URLInput = document.getElementById('trailer_url');
                     var trailerfile = document.querySelector('input[name="trailer_video"]');
+                    var trailerURL = document.querySelector('input[name="trailer_url"]');
                     var trailerfileError = document.getElementById('trailer-file-error');
                     var urlError = document.getElementById('trailer-url-error');
                     var URLInputField = document.querySelector('input[name="trailer_url"]');
+                    var dropboxTrailerInput = document.getElementById('dropbox_trailer_url_input');
+                    var DropboxTrailerInputSection = document.getElementById('video_dropbox_trailer_uploader_section');
+                    var dropboxTraiierStatusSection = document.getElementById('dropbox_trailer_status_section');
+                    var dropboxTrailerURL = document.getElementById('dropbox_trailer_url');
+                    var dropboxTrailerStatus = document.getElementById('dropbox_trailer_video_status');
+                    
 
                     if (selectedValue === 'Local') {
                         trailerfile.setAttribute('required', 'required');
@@ -593,18 +780,47 @@ document.addEventListener('DOMContentLoaded', function () {
                         FileInput.classList.remove('d-none');
                         URLInput.classList.add('d-none');
                         URLInputField.removeAttribute('required');
+                        dropboxTrailerURL.removeAttribute('required');
                     } else if (selectedValue === 'URL' || selectedValue === 'YouTube' || selectedValue === 'HLS' || selectedValue === 'x265' ||
                          selectedValue === 'Vimeo') {
                         URLInput.classList.remove('d-none');
                         FileInput.classList.add('d-none');
                         URLInputField.setAttribute('required', 'required');
                         trailerfile.removeAttribute('required');
+                        dropboxTrailerURL.removeAttribute('required');
                         validateTrailerUrlInput()
+                    } else if (selectedValue === 'Dropbox') {
+                        trailerfile.removeAttribute('required');
+                        trailerfile.classList.add('d-none');
+                        trailerfileError.style.display = 'block';
+                        FileInput.classList.add('d-none');
+                        FileInput.removeAttribute('required');
+                        // FileInput.setAttribute('required', 'required');
+                        URLInput.classList.add('d-none');
+                        URLInputField.setAttribute('required', 'required');
+                        FileNoNeed.removeAttribute('required');
+                        dropboxTraiierStatusSection.style.display = 'block';
+                        // dropboxTrailerURL.setAttribute('required', 'required');
+                        dropboxTrailerURL.removeAttribute('required');
+                        // dropboxTrailerURL.disabled = true;
+                        // trailerURL.setAttribute('required', 'required');
+                        // trailerURLInput.
+                        // URLInput.removeAttribute('required');
+                        // dropboxTrailerInput.classList.add('required');
+                        // URLInput.setAttribute('required', 'required');
+                        dropboxTrailerStatus.disabled = true;
+                        URLInput.removeAttribute('required');
+                        // URLInput.disabled = true; //add hiih
+                        dropboxTrailerInput.classList.remove('d-none');
+                        DropboxTrailerInputSection.classList.remove('d-none');
                     } else {
                         FileInput.classList.add('d-none');
                         URLInput.classList.add('d-none');
                         URLInputField.removeAttribute('required');
                         trailerfile.removeAttribute('required');
+                        dropboxTrailerInput.removeAttribute('required');
+                        dropboxTraiierStatusSection.style.display = 'none';
+                        dropboxTrailerURL.removeAttribute('required');
                     }
                 }
 
@@ -621,11 +837,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         urlPattern = /^(https?:\/\/)?(www\.vimeo\.com)\/.+$/;
                         urlPatternError.innerText = '';
                         urlPatternError.innerText='Please enter a valid Vimeo URL'
+                    } else if (selectedValue === 'Dropbox') {
+                        // urlPattern = /^(https?:\/\/)?(www\.vimeo\.com)\/.+$/;
+                        // urlPatternError.innerText = '';
+                        // urlPatternError.innerText='Please enter a valid Vimeo URL'
+                        console.log("Trailer URL check::")
                     } else {
                         // General URL pattern for other types
                         urlPattern = /^https?:\/\/.+$/;
                          urlPatternError.innerText='Please enter a valid URL'
                     }
+                    urlPattern = /^https?:\/\/.+$/;
                         if (!urlPattern.test(URLInput.value)) {
                             urlPatternError.style.display = 'block';
                             return false;
@@ -647,7 +869,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (URLInput) {
                     URLInput.addEventListener('input', function() {
 
-                        validateTrailerUrlInput();
+                        // validateTrailerUrlInput();
                     });
                 }
             });
@@ -699,12 +921,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 function handleVideoUrlTypeChange(selectedtypeValue) {
                     var VideoFileInput = document.getElementById('video_file_input_section');
+                    var VideoDropboxInput = document.getElementById('video_dropbox_uploader_section');
+                    var dropboxUrlInput = document.getElementById('dropbox_video_url_input');
                     var VideoURLInput = document.getElementById('video_url_input_section');
                     var videourl = document.getElementById('video_url_input');
                     var videofile = document.querySelector('input[name="video_file_input"]');
                     var fileError = document.getElementById('file-error');
                     var urlError = document.getElementById('url-error');
                     var urlPatternError = document.getElementById('url-pattern-error');
+                    var dropboxStatusSection = document.getElementById('dropbox_status_section');
+                    var dropboxVideoStatus = document.getElementById('dropbox_video_status');
+                    var dropboxURLSection = document.getElementById('dropbox_url');
+                    
                     if (selectedtypeValue === 'Local') {
                         VideoFileInput.classList.remove('d-none');
                         VideoURLInput.classList.add('d-none');
@@ -718,17 +946,40 @@ document.addEventListener('DOMContentLoaded', function () {
                         videourl.setAttribute('required', 'required');
                         videofile.removeAttribute('required');
                         validateVideoUrlInput();
+                    } else if (selectedtypeValue === 'Dropbox') {
+                        // VideoFileInput.setAttribute('required', 'required');
+                        VideoURLInput.classList.remove('d-none');
+                        // VideoURLInput.setAttribute('required', 'required');
+                        // VideoURLInput.classList.add('inactive');
+                        VideoDropboxInput.classList.remove('d-none');
+                        dropboxStatusSection.style.display = 'block';
+                        // videourl.setAttribute('required', 'required');
+                        videourl.removeAttribute('required');
+                        videourl.classList.add('d-none');
+                        dropboxUrlInput.required = true;//.classList.add('required');
+                        // videourl.disabled = true;
+                        // videourl.removeAttribute('required');
+                        // videofile.setAttribute('required', 'required');
+                        videofile.removeAttribute('required');
+                        fileError.style.display = 'block';
+                        dropboxVideoStatus.disabled = true;
+                        // dropboxURLSection.disabled = true;
                     } else {
                         VideoFileInput.classList.add('d-none');
                         VideoURLInput.classList.add('d-none');
+                        VideoDropboxInput.classList.add('d-none');
+                        dropboxStatusSection.style.display = 'none';
                         videofile.removeAttribute('required');
                         videourl.removeAttribute('required');
+                        dropboxUrlInput.removeAttribute('required');
                     }
                 }
                 function validateVideoUrlInput() {
                     var videourl = document.querySelector('input[name="video_url_input"]');
                     var urlError = document.getElementById('url-error');
                     var urlPatternError = document.getElementById('url-pattern-error');
+                    var VideoDropboxInput = document.getElementById('video_dropbox_uploader_section');
+                    var dropboxUrlInput = document.getElementById('dropbox_video_url_input');
 
                     if (videourl.value === '') {
                         urlError.style.display = 'block';
@@ -745,11 +996,17 @@ document.addEventListener('DOMContentLoaded', function () {
                         urlPattern = /^(https?:\/\/)?(www\.vimeo\.com)\/.+$/;
                         urlPatternError.innerText = '';
                         urlPatternError.innerText='Please enter a valid Vimeo URL'
+                    }  else if (selectedValue === 'Dropbox') {
+                        // urlPattern = /^(https?:\/\/)?(www\.vimeo\.com)\/.+$/;
+                        // urlPatternError.innerText = '';
+                        // urlPatternError.innerText='Please enter a valid Vimeo URL'
+                        console.log("dropbox validation")
                     } else {
                         // General URL pattern for other types
                         urlPattern = /^https?:\/\/.+$/;
                          urlPatternError.innerText='Please enter a valid URL starting with http:// or https://.'
                     } // Simple URL pattern validation
+                    urlPattern = /^https?:\/\/.+$/;
                         if (!urlPattern.test(videourl.value)) {
                             urlPatternError.style.display = 'block';
                             return false;
@@ -934,6 +1191,8 @@ document.addEventListener('DOMContentLoaded', function () {
             <select name="video_quality_type[]" id="video_quality_type_${index}" class="form-control select2 video_quality_type">
               <option value="YouTube" ${video.video_quality_type === 'YouTube' ? 'selected' : ''}>YouTube</option>
               <option value="Local" ${video.video_quality_type === 'Local' ? 'selected' : ''}>Local</option>
+              <!-- added for dropbox -->
+              <option value="Dropbox" ${video.video_quality_type === 'Dropbox' ? 'selected' : ''}>Dropbox</option>
             </select>
           </div>
 
@@ -1068,6 +1327,56 @@ $('#GenrateDescription').on('click', function(e) {
             var thumbUrl = $("#thumbnail_url")
             thumbUrl.attr('accept', 'video/*');
 
+            // Dropbox Status Management Functions
+            // function updateDropboxStatus(status, dropboxUrl = null) {
+            //     $('#dropbox_video_status').val(status);
+            //     if (dropboxUrl) {
+            //         $('#dropbox_url').val(dropboxUrl);
+            //     }
+            //     updateStatusBadge(status);
+            // }
+
+            function updateStatusBadge(status) {
+                var badge = $('#dropbox-upload-status-badge');
+                var statusText = badge.find('.status-text');
+                
+                // Remove existing status classes
+                badge.removeClass('bg-secondary bg-primary bg-warning bg-success bg-danger');
+                
+                // Add appropriate class based on status
+                switch(status) {
+                    case 'queued':
+                        badge.addClass('bg-secondary');
+                        break;
+                    case 'uploading':
+                        badge.addClass('bg-primary');
+                        break;
+                    case 'processing':
+                        badge.addClass('bg-warning');
+                        break;
+                    case 'completed':
+                        badge.addClass('bg-success');
+                        break;
+                    case 'failed':
+                        badge.addClass('bg-danger');
+                        break;
+                }
+                
+                statusText.text(status.charAt(0).toUpperCase() + status.slice(1));
+                badge.show();
+            }
+
+            // Initialize status badge on page load
+            var initialStatus = $('#dropbox_video_status').val();
+            if (initialStatus) {
+                updateStatusBadge(initialStatus);
+            }
+
+            // Handle dropbox status change
+            $('#dropbox_video_status').change(function() {
+                var status = $(this).val();
+                updateStatusBadge(status);
+            });
 
         </script>
 
@@ -1084,4 +1393,25 @@ $('#GenrateDescription').on('click', function(e) {
 
 
         </style>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (typeof window.initDropboxUploader === 'function') {
+                    window.initDropboxUploader();
+                }
+            });
+            // Dropbox status badge updates
+            window.updateDropboxStatusBadge = function(status) {
+                var badge = document.getElementById('dropbox-upload-status-badge');
+                if (!badge) return;
+                var text = badge.querySelector('.status-text');
+                if (text) { text.textContent = status; }
+                badge.style.display = 'inline-block';
+                badge.classList.remove('bg-secondary','bg-info','bg-warning','bg-success','bg-danger');
+                if (status === 'queued') badge.classList.add('bg-secondary');
+                else if (status === 'uploading') badge.classList.add('bg-info');
+                else if (status === 'processing') badge.classList.add('bg-warning');
+                else if (status === 'completed') badge.classList.add('bg-success');
+                else if (status === 'failed') badge.classList.add('bg-danger');
+            }
+        </script>
     @endpush

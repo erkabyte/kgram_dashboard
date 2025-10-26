@@ -51,12 +51,15 @@ class Entertainment extends BaseModel
         'video_upload_type',
         'enable_quality',
         'video_url_input',
+        'dropbox_video_status',
+        'dropbox_url',
         'download_status',
         'download_type',
         'download_url',
         'enable_download_quality',
         'video_quality_url',
-        'poster_tv_url'
+        'poster_tv_url',
+        'dropbox_trailer_url'
 
     ];
 

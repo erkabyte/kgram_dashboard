@@ -51,8 +51,10 @@ class EntertainmentRepository implements EntertainmentRepositoryInterface
     {
         $entertainment = Entertainment::findOrFail($id);
 
-        if ($data['movie_access'] == 'free') {
-            $data['plan_id'] = null;
+        if (isset($data['movie_access'])) {
+            if ($data['movie_access'] == 'free') {
+                $data['plan_id'] = null;
+            }
         }
 
         $entertainment->update($data);

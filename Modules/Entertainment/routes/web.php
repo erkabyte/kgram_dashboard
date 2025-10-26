@@ -51,6 +51,18 @@ Route::group(['prefix' => 'app', 'as' => 'backend.', 'middleware' => ['auth','ad
       Route::get('download-option/{id}', [EntertainmentsController::class, 'downloadOption'])->name('download-option');
       Route::Post('store-downloads/{id}', [EntertainmentsController::class, 'storeDownloads'])->name('store-downloads');
       Route::get('details/{id}', [EntertainmentsController::class, 'details'])->name("details");
+      Route::post('upload-to-dropbox', [EntertainmentsController::class, 'uploadToDropbox'])->name('upload-to-dropbox');
+      Route::post('upload-trailer-to-dropbox', [EntertainmentsController::class, 'uploadTrailerToDropbox'])->name('upload-trailer-to-dropbox');
+      // Route::post('convert-to-hls', [EntertainmentsController::class, 'convertToHls'])->name('convert-to-hls');
+Route::get('test-dropbox-connection', [EntertainmentsController::class, 'testDropboxConnection'])->name('test-dropbox-connection');
+Route::post('store', [EntertainmentsController::class, 'store'])->name('store');
+
+Route::get('dropbox/connect', [EntertainmentsController::class, 'redirectToDropbox']);
+Route::get('dropbox/callback', [EntertainmentsController::class, 'handleCallback']);
+Route::get('dropbox/refresh', [EntertainmentsController::class, 'refreshToken']);
+
+Route::get('dropbox-config-status', [EntertainmentsController::class, 'getDropboxConfigStatus'])->name('dropbox-config-status');
+Route::get('test-filename-generation/{filename}', [EntertainmentsController::class, 'testFilenameGeneration'])->name('test-filename-generation');
     });
     Route::resource("entertainments", EntertainmentsController::class);
 

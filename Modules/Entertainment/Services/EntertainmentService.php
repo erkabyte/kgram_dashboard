@@ -7,6 +7,7 @@ use  Modules\Genres\Repositories\GenreRepositoryInterface;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 
 class EntertainmentService
@@ -45,6 +46,10 @@ class EntertainmentService
         if($data['type']=='movie'){
 
             $data['video_url_input'] = ($data['video_upload_type'] == 'Local') ? $data['video_file_input'] : $data['video_url_input'];
+            if ((isset($data['video_upload_type']) ? $data['video_upload_type'] : null) === 'Dropbox') {
+                $data['dropbox_video_status'] = isset($data['dropbox_video_status']) ? $data['dropbox_video_status'] : 'queued';
+                $data['dropbox_url'] = isset($data['dropbox_url']) ? $data['dropbox_url'] : null;
+            }
 
         }else{
             $data['video_url_input']=null;
@@ -60,13 +65,13 @@ class EntertainmentService
             $this->entertainmentRepository->saveCountryMappings($data['countries'], $entertainment->id);
         }
 
-        if (!empty($data['actors'])) {
-            $this->entertainmentRepository->saveTalentMappings($data['actors'], $entertainment->id);
-        }
+        // if (!empty($data['actors'])) {
+        //     $this->entertainmentRepository->saveTalentMappings($data['actors'], $entertainment->id);
+        // }
 
-        if (!empty($data['directors'])) {
-            $this->entertainmentRepository->saveTalentMappings($data['directors'], $entertainment->id);
-        }
+        // if (!empty($data['directors'])) {
+        //     $this->entertainmentRepository->saveTalentMappings($data['directors'], $entertainment->id);
+        // }
 
         if (isset($data['enable_quality']) && $data['enable_quality'] == 1) {
             // Check if the keys are set to avoid undefined key errors
@@ -103,6 +108,10 @@ class EntertainmentService
             $data['trailer_url'] = ($data['trailer_url_type'] == 'Local') ? $data['trailer_video'] : $data['trailer_url'];
 
             $data['video_url_input'] = ($data['video_upload_type'] == 'Local') ? $data['video_file_input'] : $data['video_url_input'];
+            if ((isset($data['video_upload_type']) ? $data['video_upload_type'] : null) === 'Dropbox' && empty($entertainment->dropbox_video_status)) {
+                $data['dropbox_video_status'] = 'queued';
+                $data['dropbox_url'] = isset($data['dropbox_url']) ? $data['dropbox_url'] : null;
+            }
           }else{
 
             $cacheKey = 'tvshow_'.$id;
@@ -277,6 +286,10 @@ class EntertainmentService
             $query->where('status', $filter['column_status']);
         }
 
+        if (isset($filter['dropbox_status'])) {
+            $query->where('dropbox_video_status', $filter['dropbox_status']);
+        }
+
         return $query;
     }
 
@@ -290,6 +303,55 @@ class EntertainmentService
     public function getEntertainmentList($perPage, $searchTerm = null)
     {
         return $this->entertainmentRepository->list($perPage, $searchTerm);
+    }
+
+    /**
+     * Update dropbox video status
+     *
+     * @param int $id
+     * @param string $status
+     * @param string|null $dropboxUrl
+     * @return bool
+     */
+    public function updateDropboxStatus($id, $status, $hlsOutputURL=null, $videoType=null)
+    {
+        
+        // if ($dropboxUrl !== null) {
+        //     $data['dropbox_url'] = $dropboxUrl;
+        // }
+        
+        if($videoType == 'trailer' && $hlsOutputURL !== null){
+
+            $data['trailer_url'] = $hlsOutputURL;
+
+        }
+        else if($videoType == 'movie' && $hlsOutputURL !== null){
+            $data['video_url_input'] = $hlsOutputURL;
+            $data ['dropbox_video_status' ]= $status;
+        }
+        // if ($hlsOutputURL !== null) {
+        //     $data['video_url_input'] = $hlsOutputURL;
+        // }
+        Log::info('Dropbox video type : '.json_encode($videoType));
+        Log::info('Dropbox video data : '.json_encode($data));
+        
+        return $this->entertainmentRepository->update($id, $data);
+    }
+
+    /**
+     * Get dropbox status options
+     *
+     * @return array
+     */
+    public function getDropboxStatusOptions()
+    {
+        return [
+            'queued' => 'Queued',
+            'uploading' => 'Uploading',
+            'processing' => 'Processing',
+            'completed' => 'Completed',
+            'failed' => 'Failed'
+        ];
     }
 
 }

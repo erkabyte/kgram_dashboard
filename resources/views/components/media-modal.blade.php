@@ -41,9 +41,9 @@
                                     ->attribute('accept', '.jpeg, .jpg, .png, .gif, .mov, .mp4, .avi')
                                     ->attribute('multiple', true)
                                     ->style('display: none;')
-                                    ->required()
                                 }}
                             </div>
+                            <!-- ->required() -->
                             <div class="uploaded-image" id="selectedImageContainerThumbnail">
                                 @if(old('file_url', isset($data) ? $data->file_url : ''))
                                     <img src="{{ old('file_url', isset($data) ? $data->file_url : '') }}" class="img-fluid mb-2" style="max-width: 100px; max-height: 100px;">
@@ -207,17 +207,17 @@ document.getElementById('file_url_media').addEventListener('change', function() 
                 fileError.style.display = 'none';
                 submitButton.removeAttribute('disabled');
             } else {
-                fileInput.setAttribute('required', 'required');
-                fileError.style.display = 'block';
-                submitButton.setAttribute('disabled', 'disabled');
+                // fileInput.setAttribute('required', 'required');
+                // fileError.style.display = 'block';
+                // submitButton.setAttribute('disabled', 'disabled');
             }
         });
         if (fileInput.files.length > 0) {
             submitButton.removeAttribute('disabled');
             fileError.style.display = 'none';
         } else {
-            submitButton.setAttribute('disabled', 'disabled');
-            fileError.style.display = 'block';
+            // submitButton.setAttribute('disabled', 'disabled');
+            // fileError.style.display = 'block';
         }
     }
 });

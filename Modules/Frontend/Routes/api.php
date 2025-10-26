@@ -17,6 +17,7 @@ use Modules\Frontend\Http\Controllers\DashboardController;
 
 
 Route::get('top-10-movie', [DashboardController::class, 'Top10Movies']);
+Route::get('top-10-api', [DashboardController::class, 'Top10MoviesAPI']);
 Route::get('latest-movie', [DashboardController::class, 'LatestMovies']);
 Route::get('fetch-languages', [DashboardController::class, 'FetchLanguages']);
 Route::get('popular-movie', [DashboardController::class, 'PopularMovies']);

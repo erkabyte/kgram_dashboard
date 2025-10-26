@@ -555,6 +555,34 @@ class DashboardController extends Controller
 
         return response()->json(['html' => $html]);
     }
+    
+    public function Top10MoviesAPI()
+    {
+        $cacheKey = 'top_10_movie';
+        $top_10 = Cache::get($cacheKey);
+
+         $html='';
+
+        if (!$top_10) {
+            $top_10=[];
+            $topMovieIds = MobileSetting::getValueBySlug('top-10');
+            if($topMovieIds != null){
+                $topMovies = Entertainment::whereIn('id', json_decode($topMovieIds))->where('status', 1)->get();
+                $top_10 = MoviesResource::collection($topMovies);
+                $top_10 = $top_10->toArray(request());
+
+              }
+
+
+            Cache::put($cacheKey, $top_10);
+        }
+
+        // if(!empty($top_10)){
+        //   $html = view('frontend::components.section.top_10_movie', ['top10' => $top_10])->render();
+        // }
+
+        return response()->json(['videos' => $top_10]);
+    }
 
 }
 

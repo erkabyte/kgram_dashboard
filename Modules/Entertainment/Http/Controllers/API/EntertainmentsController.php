@@ -177,6 +177,47 @@ class EntertainmentsController extends Controller
             'message' => __('movie.movie_details'),
         ], 200);
     }
+    public function movieDetails1(Request $request)
+    {
+
+        $movieId = $request->movie_id;
+
+        // $cacheKey = 'movie_' . $movieId . '_'.$request->profile_id;
+
+        // $responseData = Cache::get($cacheKey);
+
+        // if (!$responseData) {
+
+            $movie = Entertainment::where('id', $movieId)->with('entertainmentGenerMappings', 'plan', 'entertainmentReviews', 'entertainmentTalentMappings', 'entertainmentStreamContentMappings', 'entertainmentDownloadMappings')->first();
+            $movie['reviews'] = $movie->entertainmentReviews ?? null;
+
+            // if ($request->has('user_id')) {
+
+                $user_id = $request->user_id;
+                $movie['is_watch_list'] = WatchList::where('entertainment_id', $movieId)->where('user_id', $user_id)->where('profile_id', $request->profile_id)->exists();
+                $movie['is_likes'] = Like::where('entertainment_id', $movieId)->where('user_id', $user_id)->where('profile_id', $request->profile_id)->where('is_like', 1)->exists();
+                $movie['is_download'] = EntertainmentDownload::where('entertainment_id', $movieId)->where('device_id',$request->device_id)->where('user_id', $user_id)
+                ->where('entertainment_type', 'movie')->where('is_download', 1)->exists();
+                $movie['your_review'] = $movie->entertainmentReviews ? optional($movie->entertainmentReviews)->where('user_id', $user_id)->first() : null;
+
+                if ($movie['your_review']) {
+                    $movie['reviews'] = $movie['reviews']->where('user_id', '!=', $user_id);
+                }
+
+                $continueWatch = ContinueWatch::where('entertainment_id', $movie->id)->where('user_id', $user_id)->where('profile_id', $request->profile_id)->where('entertainment_type', 'movie')->first();
+                $movie['continue_watch'] = $continueWatch;
+            // }
+            $responseData = new MovieDetailDataResource($movie);
+            // Cache::put($cacheKey, $responseData);
+        // }
+
+
+        return response()->json([
+            'status' => true,
+            'data' => $responseData,
+            'message' => __('movie.movie_details'),
+        ], 200);
+    }
 
     public function tvshowList(Request $request)
     {
@@ -982,6 +1023,108 @@ class EntertainmentsController extends Controller
     }
 
     public function movieListV2(Request $request)
+    {
+        $perPage = $request->input('per_page', 10);
+
+        $movieList = Entertainment::selectRaw('entertainments.id,entertainments.id as e_id,entertainments.name,entertainments.type,entertainments.plan_id,plan.level as plan_level,entertainments.description,entertainments.trailer_url_type,entertainments.is_restricted,entertainments.language,entertainments.imdb_rating,entertainments.content_rating,entertainments.duration,entertainments.video_upload_type,GROUP_CONCAT(egm.genre_id) as genres,entertainments.release_date,entertainments.trailer_url,entertainments.video_url_input, entertainments.poster_url as poster_image, entertainments.thumbnail_url as thumbnail_image,entertainments.trailer_url as base_url,entertainments.movie_access')
+        ->join('entertainment_gener_mapping as egm','egm.entertainment_id','=','entertainments.id')
+        ->leftJoin('plan','plan.id','=','entertainments.plan_id')->where('entertainments.type', 'movie');
+
+        $movieList = $movieList->where('entertainments.status', 1)
+        ->where('release_date', '<=', Carbon::now()->format('Y-m-d'));  // Check release date is less than current date
+
+        if ($request->has('search')) {
+            $searchTerm = $request->search;
+            $movieList->where(function ($query) use ($searchTerm) {
+                $query->where('name', 'like', "%{$searchTerm}%");
+            });
+        }
+        if ($request->filled('genre_id')) {
+            $genreId = $request->genre_id;
+            $movieList->where('egm.genre_id',$genreId);
+
+    
+
+        }
+        if ($request->filled('latest')) {
+            // $genreId = $request->genre_id;
+            // $movieList->where('egm.genre_id',$genreId);
+            $movieList->order('egm.created_at ASC');
+    
+
+        }
+     
+        if ($request->filled('actor_id'))
+        {
+            $actorId = $request->actor_id;
+
+            $isMovieModuleEnabled = isenablemoduleV2('movie');
+            $isTVShowModuleEnabled = isenablemoduleV2('tvshow');
+
+            $movies = $movieList->where(function ($query) use ($actorId, $isMovieModuleEnabled, $isTVShowModuleEnabled)
+            {
+                if ($isMovieModuleEnabled && $isTVShowModuleEnabled)
+                {
+                    $query->where('entertainments.type', 'movie')
+                          ->orWhere('entertainments.type', 'tvshow');
+                } elseif ($isMovieModuleEnabled) {
+                    $query->where('entertainments.type', 'movie');
+                } elseif ($isTVShowModuleEnabled) {
+                    $query->where('entertainments.type', 'tvshow');
+                }
+            })
+            ->join('entertainment_talent_mapping as etm', function($q) use ($actorId)
+            {
+                $q->on('etm.entertainment_id','=','entertainments.id')
+                ->where('etm.talent_id', $actorId);
+            });
+        }
+        if ($request->filled('language')) {
+            $movieList->where('entertainments.language', $request->language);
+        }
+
+        $movies = $movieList->groupBy('entertainments.id')->orderBy('entertainments.id', 'desc')->paginate($perPage);
+
+    
+        $responseData = MoviesResourceV2::collection($movies);
+
+
+        if ($request->has('is_ajax') && $request->is_ajax == 1) {
+            $html = '';
+            foreach ($responseData->toArray($request) as $movieData)
+            {
+                if(isenablemoduleV2($movieData['type']) == 1)
+                {
+                    $userId = auth()->id();
+                    if($userId)
+                    {
+                        $isInWatchList = WatchList::where('entertainment_id', $movieData['id'])
+                        ->where('user_id', $userId)
+                        ->exists();
+                        $movieData['is_watch_list'] = $isInWatchList ? true : false;
+                    }
+                    $html .= view('frontend::components.card.card_entertainment', ['value' => $movieData])->render();
+
+                }
+            }
+
+            $hasMore = $movies->hasMorePages();
+
+            return response()->json([
+                'status' => true,
+                'html' => $html,
+                'message' => __('movie.movie_list'),
+                'hasMore' => $hasMore,
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $responseData,
+            'message' => __('movie.movie_list'),
+        ], 200);
+    }
+    public function movieListByCategory(Request $request)
     {
         $perPage = $request->input('per_page', 10);
 

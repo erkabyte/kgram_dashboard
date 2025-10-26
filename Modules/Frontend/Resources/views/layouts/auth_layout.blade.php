@@ -64,8 +64,8 @@ if(form){
    const requiredFields = form.querySelectorAll('[required]');
 
        requiredFields.forEach(field => {
-           field.addEventListener('input', () => validateField(field));
-           field.addEventListener('change', () => validateField(field));
+        //    field.addEventListener('input', () => validateField(field));
+        //    field.addEventListener('change', () => validateField(field));
        });
            form.addEventListener('submit', function(event) {
                if (formSubmitted) {

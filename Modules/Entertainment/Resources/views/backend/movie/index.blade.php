@@ -101,6 +101,18 @@
             </div>
 
             <div class="form-group datatable-filter">
+                <label class="form-label" for="dropbox_status">{{__('Dropbox Status')}}</label>
+                <select name="dropbox_status" id="dropbox_status" class="form-control select2" data-filter="select">
+                    <option value="">{{ __('messages.all') }} </option>
+                    <option value="queued">Queued</option>
+                    <option value="uploading">Uploading</option>
+                    <option value="processing">Processing</option>
+                    <option value="completed">Completed</option>
+                    <option value="failed">Failed</option>
+                </select>
+            </div>
+
+            <div class="form-group datatable-filter">
                 {{ html()->label(__('movie.lbl_movie_access') , 'movie_access')->class('form-label') }}
                 <div class="d-flex align-items-center">
                     <label class="form-check form-check-inline form-control ps-5 cursor-pointer">
@@ -215,7 +227,37 @@
                    return data.charAt(0).toUpperCase() + data.slice(1);
                }
            },
-
+           {
+               data: 'dropbox_video_status',
+               name: 'dropbox_video_status',
+               title: "{{ __('Dropbox Status') }}",
+               render: function (data, type, row) {
+                   if (!data) return '<span class="badge bg-secondary">-</span>';
+                   
+                   let className = 'badge ';
+                   switch(data) {
+                       case 'queued':
+                           className += 'bg-secondary';
+                           break;
+                       case 'uploading':
+                           className += 'bg-primary';
+                           break;
+                       case 'processing':
+                           className += 'bg-warning';
+                           break;
+                       case 'completed':
+                           className += 'bg-success';
+                           break;
+                       case 'failed':
+                           className += 'bg-danger';
+                           break;
+                       default:
+                           className += 'bg-secondary';
+                   }
+                   
+                   return '<span class="' + className + '">' + data.charAt(0).toUpperCase() + data.slice(1) + '</span>';
+               }
+           },
             {
                 data: 'status',
                 name: 'status',
@@ -273,6 +315,10 @@
                window.renderedDataTable.ajax.reload(null, false);
            });
 
+           $('#dropbox_status').on('select', function() {
+               window.renderedDataTable.ajax.reload(null, false);
+           });
+
             initDatatable({
                 url: '{{ route("backend.$module_name.index_data") }}',
                 finalColumns,
@@ -285,6 +331,7 @@
                         gener: $('#gener').val(),
                         movie_access: selectedaccess,
                         plan_id: $('#plan_id').val(),
+                        dropbox_status: $('#dropbox_status').val(),
                     }
                 }
             });
@@ -296,6 +343,7 @@
             $('#gener').val(''),
             $('#movie_access').val(''),
             $('#plan_id').val(''),
+            $('#dropbox_status').val(''),
 
             $('input[name="movie_access"]').prop('checked', false);
             selectedaccess = null;

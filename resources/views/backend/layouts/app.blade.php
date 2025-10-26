@@ -285,8 +285,8 @@ if(form){
     const requiredFields = form.querySelectorAll('[required]');
 
         requiredFields.forEach(field => {
-            field.addEventListener('input', () => validateField(field));
-            field.addEventListener('change', () => validateField(field));
+            // field.addEventListener('input', () => validateField(field));
+            // field.addEventListener('change', () => validateField(field));
         });
             form.addEventListener('submit', function(event) {
                 if (formSubmitted) {
@@ -319,15 +319,17 @@ if(form){
         //     }
         // }
         requiredFields.forEach(field => {
+            console.log('required field id ::'+field.id);   
             if (!validateField(field)) {
-                isValid = false;
+                // isValid = false;
             }
         });
         // Optional: Check for URL pattern validation
         const urlInput = form.querySelector('input[name="video_url_input"]');
-        if (urlInput && urlInput.required && urlInput.value.trim() && !/^https?:\/\/.+/.test(urlInput.value)) {
-            isValid = false;
-        }
+        // if (urlInput && urlInput.required && urlInput.value.trim() && !/^https?:\/\/.+/.test(urlInput.value)) {
+        //     console.log("it's not valid");
+        //     // isValid = false;
+        // }
         const emailInput = form.querySelector('input[type="email"]');
         if (emailInput && emailInput.required && emailInput.value.trim() && !isValidEmail(emailInput.value)) {
             isValid = false;
@@ -361,19 +363,20 @@ if(form){
         }
     function validateField(field) {
         const fieldId = field.id; // Use id for error message display
+        console.log('field id ::'+field.id+" "+field.value);
         const fieldError = document.getElementById(`${fieldId}-error`);
         let isValid = true;
 
-        if (!field.value.trim()) {
-            if (fieldError) {
-                fieldError.style.display = 'block';
-            }
-            isValid = false;
-        } else {
-            if (fieldError) {
-                fieldError.style.display = 'none';
-            }
-        }
+        // if (!field.value.trim()) {
+        //     if (fieldError) {
+        //         fieldError.style.display = 'block';
+        //     }
+        //     isValid = false;
+        // } else {
+        //     if (fieldError) {
+        //         fieldError.style.display = 'none';
+        //     }
+        // }
 
         return isValid;
     }

@@ -9,6 +9,8 @@ use Modules\Frontend\Http\Controllers\QueryOptimizeController;
 use Modules\User\Http\Controllers\API\UserController;
 use Modules\Entertainment\Http\Controllers\API\EntertainmentsController;
 use Modules\LiveTV\Http\Controllers\API\LiveTVsController;
+use App\Http\Controllers\Auth\OtpController;
+use Modules\Entertainment\Services\EntertainmentService;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,3 +83,75 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
 });
 Route::get('app-configuration', [SettingController::class, 'appConfiguraton']);
+
+
+
+
+
+Route::post('/otp/send', [OtpController::class, 'send']);
+Route::post('/otp/verify', [OtpController::class, 'verify']);
+
+// Callback for converter to update Dropbox video status
+// Route::post('/dropbox/status/{id}', function (Request $request, $id) {
+//     $request->validate([
+//         'status' => 'required|in:queued,uploading,processing,completed,failed',
+//         'dropbox_url' => 'nullable|url',
+//         'hlsOutputURL' => 'nullable|url',
+//         'type' => 'nullable|string'
+//     ]);
+
+//     // Optional: simple token check to secure the endpoint
+//     // $expectedToken = config('services.converter.webhook_token');
+//     // if (!empty($expectedToken)) {
+//     //     $incoming = $request->header('X-Webhook-Token');
+//     //     if ($incoming !== $expectedToken) {
+//     //         return response()->json(['success' => false, 'message' => 'Forbidden'], 403);
+//     //     }
+//     // }
+
+//     /** @var EntertainmentService $service */
+//     Log::info('Dropbox video save request : '.json_encode($request->all()));
+
+//     // if($request->videoType == 'trailer'){
+        
+//     // }
+//     $service = app(EntertainmentService::class);
+//     $service->updateDropboxStatus($id, $request->status,$request->hlsOutputURL,$request->type);
+
+//     return response()->json(['success' => true]);
+// })->name('api.dropbox.status');
+
+Route::post('/dropbox/status/{id}', function (Request $request, $id) {
+    // ... validation ...
+    $request->validate([
+        'status' => 'required|in:queued,uploading,processing,completed,failed',
+        'dropbox_url' => 'nullable|url',
+        'hlsOutputURL' => 'nullable|url',
+        'type' => 'nullable|string'
+    ]);
+
+    Log::info('Dropbox video save request: ' . json_encode($request->all()));
+
+    try {
+        $service = app(EntertainmentService::class);
+        $service->updateDropboxStatus($id, $request->status, $request->hlsOutputURL, $request->type);
+    } catch (\Exception $e) {
+        // Log the specific error from the service
+        Log::error('Error in EntertainmentService: ' . $e->getMessage());
+        
+        // Return a 500 error with a meaningful message
+        return response()->json([
+            'success' => false,
+            'message' => 'An internal server error occurred.',
+            'error' => $e->getMessage() // Optional: for debugging only
+        ], 500);
+    }
+
+    return response()->json(['success' => true]);
+})->name('api.dropbox.status');
+
+
+// Protected routes
+// Route::middleware('auth:sanctum')->group(function () {
+//     Route::get('/user', fn(Request $req) => $req->user());
+// });

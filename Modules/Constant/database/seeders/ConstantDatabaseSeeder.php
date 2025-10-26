@@ -104,6 +104,11 @@ class ConstantDatabaseSeeder extends Seeder
                 'value' => 'x265',
             ],
             [
+                'type' => 'upload_type',
+                'name' => 'Dropbox',
+                'value' => 'Dropbox',
+            ],
+            [
                 'type' => 'movie_language',
                 'name' => 'English',
                 'value' => 'english',

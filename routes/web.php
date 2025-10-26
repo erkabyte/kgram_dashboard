@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Backend\MobileSettingController;
 use Modules\Setting\Http\Controllers\Backend\SettingsController;
 use Modules\Frontend\Http\Controllers\FrontendController;
-
+// use Modules\Entertainment\Http\Controllers\Backend\Entertainment;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -182,15 +182,18 @@ Route::group(['prefix' => 'app', ['middleware' => ['auth','admin']]], function (
 
 });
 
-Route::middleware(['web'])->group(function () {
-    // Public routes
-    Route::get('login', 'Auth\LoginController@showLoginForm')->name('login');
-    Route::post('login', 'Auth\LoginController@login');
+// Route::middleware(['web'])->group(function () {
+//     // Public routes
+//     Route::get('login', 'Auth\LoginController@showLoginForm')->name('login');
+//     Route::post('login', 'Auth\LoginController@login');
     
-    // Protected routes with auth
-    Route::middleware(['auth'])->group(function () {
-        Route::post('logout', 'Auth\LoginController@logout')->name('logout');
-        // Other protected routes...
-    });
-});
+//     // Protected routes with auth
+//     Route::middleware(['auth'])->group(function () {
+//         Route::post('logout', 'Auth\LoginController@logout')->name('logout');
+//         // Other protected routes...
+//     });
+// });
 Route::get('migrate',[LanguageController::class,'migration']);
+// Auth::routes();
+
+// Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

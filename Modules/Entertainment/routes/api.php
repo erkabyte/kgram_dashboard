@@ -4,12 +4,15 @@ use Illuminate\Support\Facades\Route;
 use Modules\Entertainment\Http\Controllers\API\EntertainmentsController;
 use Modules\Entertainment\Http\Controllers\API\WatchlistController;
 use Modules\Entertainment\Http\Controllers\API\ReviewController;
-
+use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 Route::get('get-rating', [ReviewController::class, 'getRating']);
 Route::get('movie-list', [EntertainmentsController::class, 'movieList']);
 Route::get('v2/movie-list', [EntertainmentsController::class, 'movieListV2']);
 Route::get('movie-details', [EntertainmentsController::class, 'movieDetails']);
+Route::get('movie-details-1', [EntertainmentsController::class, 'movieDetails1']);
 Route::get('tvshow-list', [EntertainmentsController::class, 'tvshowList']);
 Route::get('v2/tvshow-list', [EntertainmentsController::class, 'tvshowListV2']);
 Route::get('tvshow-details', [EntertainmentsController::class, 'tvshowDetails']);
@@ -44,4 +47,19 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::post('save-entertainment-views', [EntertainmentsController::class, 'saveEntertainmentViews']);
 });
+Route::post('/video-status', function (Request $request) {
+    // Store or update job status
+    // DB::connection('streamit_new')->table('video_jobs')->updateOrInsert(
+    DB::table('video_jobs')->updateOrInsert(
+        ['job_id' => $request->job_id, 'resolution' => $request->resolution],
+        [
+            'status'    => $request->status,
+            'progress'  => $request->progress,
+            'updated_at'=> now()
+        ]
+    );
+
+    return response()->json(['ok' => true]);
+});
+
 ?>

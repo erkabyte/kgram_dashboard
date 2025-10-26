@@ -93,6 +93,12 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+        'dropbox' => [
+            'driver' => 'dropbox',
+            'key' => env('DROPBOX_APP_KEY'),
+            'secret' => env('DROPBOX_APP_SECRET'),
+            'access_token' => env('DROPBOX_ACCESS_TOKEN'),
+        ],
     ],
 
     /*
